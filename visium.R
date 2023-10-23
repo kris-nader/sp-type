@@ -3,11 +3,27 @@ library(Seurat)
 library(ggplot2)
 library(patchwork)
 library(dplyr)
+library(HDF5Array)
 
 #load data
-data_dir <- "data/brca_xenvis/visium"
+data_dir <- "data/healthy/liver_crost_VISDP000066/350frompaper"
 filename <- "filtered_feature_bc_matrix.h5"
 data <- Load10X_Spatial(data.dir = data_dir, filename = filename)
+
+#load data with no h5 file (brca wu dataset)
+data_dir <- "data/human_intestine/A1"
+mat_dir <- paste0(data_dir, "/raw_feature_bc_matrix")
+im_dir <- paste0(data_dir, "/spatial")
+mat <- Read10X(mat_dir, gene.column = 2)
+data <- CreateSeuratObject(mat, assay = "Spatial")
+im <- Read10X_Image(im_dir)
+im <- im[Cells(x = data)]
+DefaultAssay(object = im) <- 'Spatial'
+data[['Slice1']] <- im
+metadata <- read.csv(paste0(data_dir, "/metadata.csv"))
+data@meta.data$subtype <- metadata$subtype
+data@meta.data$patho_annot <- metadata$Classification
+data@meta.data$patientid <- metadata$patientid
 
 #quality control
 #nFeature is the number of genes detected in each cell
@@ -17,24 +33,28 @@ plot1 <- VlnPlot(data, features = c("nCount_Spatial", "nFeature_Spatial", "perce
                  pt.size = 0.1)
 plot2 <- SpatialFeaturePlot(data, features = c("nCount_Spatial", "nFeature_Spatial", "percent.mt"),
                             pt.size.factor = 2.4, alpha = c(0.3, 1))
-
+#save quality control plots
+output_folder <- "figures/human_intestine"
+dir.create(output_folder, recursive = TRUE)
+output_name <- "violin"
+png(file = paste0("./", output_folder, "/", output_name, ".png"),
+    width=1000, height=550)
+print(plot1)
+dev.off()
+output_name <- "quality_control"
+png(file = paste0("./", output_folder, "/", output_name, ".png"),
+    width=1000, height=550)
+print(plot2)
+dev.off()
+plot2
+plot1
 #filter
-data <- data[, data$nFeature_Spatial > 500 & data$percent.mt < 20]
-
-#see top expressed genes
-C <- data@assays$Spatial@counts
-C@x <- C@x/rep.int(colSums(C), diff(C@p))
-most_expressed <- order(Matrix::rowSums(C), decreasing = T)[20:1]
-boxplot(as.matrix(t(C[most_expressed, ])), cex = 0.1, las = 1, xlab = "% total count per cell",
-        col = (scales::hue_pal())(20)[20:1], horizontal = TRUE)
+data <- data[, data$nFeature_Spatial > 300 & data$percent.mt < 25]
 
 #normalization
 data <- SCTransform(data, assay="Spatial")
 #without using SCT:
 #data <- NormalizeData(data, normalization.method = "LogNormalize", scale.factor = 10000) %>% ScaleData() %>% FindVariableFeatures()
-
-#spatial plot for one gene
-#SpatialFeaturePlot(data, features = c("BRCA1"), pt.size.factor = 2.4, alpha = c(0.1, 1))
 
 #dim reduction and clustering
 data <- RunPCA(data, assay = "SCT", verbose = TRUE)
@@ -42,15 +62,20 @@ data <- FindNeighbors(data, reduction = "pca", dims = 1:30)
 data <- FindClusters(data, resolution = 0.8) #0.8 is the default resolution
 data <- RunUMAP(data, reduction = "pca", dim = 1:30)
 
-#save data as RData
-save(data, file = "brca_xenvis_visium.RData")
+#save data as rds
+save(data, file = "lymph_node_10x.rds")
 
-#umap plot
-p1 <- DimPlot(data, reduction = "umap", label = FALSE)
-#spatial umap plot
-p2 <- SpatialDimPlot(data, label = FALSE, label.size = 3, pt.size.factor = 2.4, alpha = c(1, 1))
-p1 + p2
-#plot clusters seperately
+#sptype
+source("sptype_KMN.R")
+data <- run_plot_sctype(data = data,
+                        #db_ = "temp/sctypeDB_20.xlsx",
+                        tissue = "Intestine",
+                        output_folder = "figures/human_intestine",
+                        output_name = "sptype",
+                        saveRDS = FALSE,
+                        pt.size.factor = 2)
+save(data, file = "human_intestine.rds")
+#plot clusters separately
 SpatialDimPlot(data,
                cells.highlight = CellsByIdentities(object = data,
                                                    idents = c(1)),

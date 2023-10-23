@@ -1,5 +1,4 @@
 library(Seurat)
-source("sptype_KMN.R")
 #Prepare reference
 
 #read reference sc file
@@ -42,11 +41,25 @@ patho <- join(patho, spots, by = "Barcode", type = "right")
 data@meta.data$patho_annot <- patho$Pathologist.Annotation
 save(data, file = "brca.rds")
 
-load("brca.rds")
-load("brca_her2_ref_markers_major_normalized.rds")
+source("sptype_KMN.R")
+load("brca_xenvis_xenium.rds")
+load("brca_her2_ref_markers_minor_normalized.rds")
 
-retrieve_markers(data, ref_markers, tissue="Breast")
-data = run_plot_sctype(data = data, db_ = "temp/sctypeDB_20.xlsx", tissue = "Breast")
+marker_per_cluster <- 100
+tissue <- "Breast"
+retrieve_markers(data,
+                 ref_markers,
+                 tissue = tissue,
+                 marker_per_cluster = marker_per_cluster)
+run_plot_sctype(data = data,
+                db_ = paste0("temp/sctypeDB_", marker_per_cluster, ".xlsx"),
+                tissue = tissue,
+                marker_per_cluster = marker_per_cluster,
+                output_folder = "figures/brca_xenvis/xenium",
+                output_name = "brca_xenvis_her2ref_minor",
+                pt.size.factor = 2.4,
+                saveRDS = FALSE,
+                st_method = "xenium")
 
 
 

@@ -1,13 +1,14 @@
 library(spacexr)
 library(Matrix)
 library(Seurat)
+library(ggplot2)
 
 #read reference sc file
 #ref from https://www.nature.com/articles/s41588-021-00911-1
 ref <- Read10X("brca_ref", gene.column = 1)
 #read metadata
 metadata <- read.csv("brca_ref/metadata.csv")
-cell_types <- metadata$celltype_major
+cell_types <- metadata$celltype_minor
 names(cell_types) <- metadata$X
 cell_types <- as.factor(cell_types)
 #create the Reference object
@@ -21,19 +22,18 @@ coords <- GetTissueCoordinates(data)
 counts <- data@assays$Spatial@counts
 #create SpatialRNA object
 puck <- SpatialRNA(coords, counts)
-plot_puck_continuous(puck, barcodes, puck@nUMI, ylimit = c(0,round(quantile(puck@nUMI,0.9))), title ='plot of nUMI') 
 
 rctd <- create.RCTD(puck, ref)
 rctd <- run.RCTD(rctd, doublet_mode = 'full')
 
-save(rctd, file = "brca_rctd.rds")
+save(rctd, file = "brca_rctd_minor.rds")
 
-load("brca_rctd.rds")
+load("brca_rctd_minor.rds")
 results <- rctd@results
 norm_weights = normalize_weights(results$weights) 
 cell_type_names <- rctd@cell_type_info$info[[2]] #list of cell type names
 spatialRNA <- rctd@spatialRNA
-resultsdir <- "figures/brca/rctd/major"
+resultsdir <- "figures/brca/rctd/minor"
 # Plots the confident weights for each cell type as in full_mode (saved as 
 # 'results/cell_type_weights_unthreshold.pdf')
 plot_weights(cell_type_names, spatialRNA, resultsdir, norm_weights)
@@ -50,7 +50,8 @@ rctd_annots <- colnames(weight_matrix)[max.col(weight_matrix,ties.method="random
 #load data and add annotation
 data@meta.data$rctd_annots <- rctd_annots
 #plot
+
 SpatialDimPlot(data, group.by = 'rctd_annots',
                      pt.size.factor = 2.4,
-                     alpha = c(1, 1), label = FALSE) +
+                     alpha = c(1, 1), label = TRUE, label.size = 2) +
   guides(colour = guide_legend(override.aes = list(size=10)))
