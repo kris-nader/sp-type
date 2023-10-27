@@ -5,8 +5,8 @@ library(scran)
 library(SingleCellExperiment)
 library(Seurat)
 
-load("brca.rds")
-load("brca_ref.rds")
+load("rds/brca_xenvis_xenium.rds")
+load("rds/brca_ref2.rds")
 #ref <- subset(ref, subtype == "HER2+")
 
 sce <- as.SingleCellExperiment(ref)
@@ -16,13 +16,13 @@ sce <- logNormCounts(sce)
 genes <- !grepl(pattern = "^Rp[l|s]|Mt", x = rownames(sce))
 
 dec <- modelGeneVar(sce, subset.row = genes)
-plot(dec$mean, dec$total, xlab = "Mean log-expression", ylab = "Variance")
-curve(metadata(dec)$trend(x), col = "blue", add = TRUE)
+#plot(dec$mean, dec$total, xlab = "Mean log-expression", ylab = "Variance")
+#curve(metadata(dec)$trend(x), col = "blue", add = TRUE)
 
 # Get the top 3000 genes.
 hvg <- getTopHVGs(dec, n = 3000)
 
-colLabels(sce) <- colData(sce)$celltype_minor
+colLabels(sce) <- colData(sce)$celltype
 
 # Compute marker genes
 mgs <- scoreMarkers(sce, subset.row = genes)
@@ -41,7 +41,7 @@ mgs_fil <- lapply(names(mgs), function(i) {
 mgs_df <- do.call(rbind, mgs_fil)
 
 # split cell indices by identity
-idx <- split(seq(ncol(sce)), sce$celltype_minor)
+idx <- split(seq(ncol(sce)), sce$celltype)
 # downsample to at most 20 per identity & subset
 n_cells <- 100
 cs_keep <- lapply(idx, function(i) {
@@ -55,14 +55,28 @@ sce <- sce[, unlist(cs_keep)]
 res <- SPOTlight(
   x = sce,
   y = data,
-  groups = as.character(sce$celltype_minor),
+  groups = as.character(sce$celltype),
   mgs = mgs_df,
   hvg = hvg,
   weight_id = "mean.AUC",
   group_id = "cluster",
-  gene_id = "gene")
+  gene_id = "gene",
+  assay_sp = "Xenium") #or Spatial
 
-save(res, file = "brca_minor_spotlight_res_all_ref.rds")
+save(res, file = "rds/brca_xenvis_xenium_spotlight.rds")
+
+load("rds/brca_xenvis_xenium_spotlight.rds")
+
+#add annotations to data metadata
+weight_matrix <- res$mat
+#for each barcode get the cell type with highest weight
+spotlight_annots <- data.frame(X = rownames(weight_matrix),
+                          annots = colnames(weight_matrix)[max.col(weight_matrix,ties.method="random")])
+barcodes <- data.frame(X = data@assays$Spatial@counts@Dimnames[[2]])
+annots <- merge(spotlight_annots, barcodes, all.y = TRUE, by = "X")
+data@meta.data$spotlight_annots <- annots$annots
+#change the directory below, don't overwrite wrong data!!!
+save(data, file = "rds/brca_xenvis_xenium.rds")
 
 head(mat <- res$mat)[, seq_len(3)]
 

@@ -2,7 +2,8 @@ library(spacexr)
 library(Matrix)
 library(Seurat)
 library(ggplot2)
-
+library(openxlsx)
+library(dplyr)
 #read reference sc file
 #ref from https://www.nature.com/articles/s41588-021-00911-1
 ref <- Read10X("brca_ref", gene.column = 1)
@@ -10,30 +11,40 @@ ref <- Read10X("brca_ref", gene.column = 1)
 metadata <- read.csv("brca_ref/metadata.csv")
 cell_types <- metadata$celltype_minor
 names(cell_types) <- metadata$X
+#for brca xenvis
+ref <- Read10X("data/cancer/brca_xenvis/sc/ftp", gene.column = 2)
+metadata <- read.xlsx("data/cancer/brca_xenvis/Cell_Barcode_Type_Matrices.xlsx")
+cell_types <- metadata$Annotation
+names(cell_types) <- metadata$Barcode
 cell_types <- as.factor(cell_types)
+
 #create the Reference object
 ref <- Reference(ref, cell_types)
 
-#load spatial data
-data_dir <- "data/brca"
+#load spatial data (raw)
+data_dir <- "data/cancer/brca_xenvis/visium"
 filename <- "filtered_feature_bc_matrix.h5"
 data <- Load10X_Spatial(data.dir = data_dir, filename = filename)
+#load processed data
+load("rds/brca_xenvis_xenium.rds")
 coords <- GetTissueCoordinates(data)
-counts <- data@assays$Spatial@counts
+coords$cell <- NULL
+counts <- data@assays$Xenium@counts #xenium or spatial
+
 #create SpatialRNA object
 puck <- SpatialRNA(coords, counts)
 
 rctd <- create.RCTD(puck, ref)
 rctd <- run.RCTD(rctd, doublet_mode = 'full')
 
-save(rctd, file = "brca_rctd_minor.rds")
+save(rctd, file = "rds/brca_xenvis_xenium_rctd.rds")
 
-load("brca_rctd_minor.rds")
+load("rds/brca_xenvis_visium_rctd.rds")
 results <- rctd@results
 norm_weights = normalize_weights(results$weights) 
 cell_type_names <- rctd@cell_type_info$info[[2]] #list of cell type names
 spatialRNA <- rctd@spatialRNA
-resultsdir <- "figures/brca/rctd/minor"
+resultsdir <- "figures/brca_xenvis/xenium/rctd"
 # Plots the confident weights for each cell type as in full_mode (saved as 
 # 'results/cell_type_weights_unthreshold.pdf')
 plot_weights(cell_type_names, spatialRNA, resultsdir, norm_weights)
@@ -46,12 +57,15 @@ plot_cond_occur(cell_type_names, resultsdir, norm_weights, spatialRNA)
 
 weight_matrix <- as.matrix(norm_weights)
 #for each barcode get the cell type with highest weight
-rctd_annots <- colnames(weight_matrix)[max.col(weight_matrix,ties.method="random")]
-#load data and add annotation
-data@meta.data$rctd_annots <- rctd_annots
+rctd_annots <- data.frame(X = norm_weights@Dimnames[[1]],
+                          rctd_annots = colnames(weight_matrix)[max.col(weight_matrix,ties.method="random")])
+barcodes <- data.frame(X = data@assays$Xenium@counts@Dimnames[[2]]) #Xenium or Spatial
+annots <- merge(rctd_annots, barcodes, all.y = TRUE, by = "X")
+data@meta.data$rctd_annots <- annots$rctd_annots
+
+save(data, file = "rds/brca_xenvis_xenium.rds")
 #plot
 
 SpatialDimPlot(data, group.by = 'rctd_annots',
                      pt.size.factor = 2.4,
-                     alpha = c(1, 1), label = TRUE, label.size = 2) +
-  guides(colour = guide_legend(override.aes = list(size=10)))
+                     alpha = c(1, 1))

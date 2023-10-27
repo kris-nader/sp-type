@@ -2,6 +2,7 @@ library(dplyr)
 library(EnhancedVolcano)
 library(openxlsx)
 library(HGNChelper)
+library(Seurat)
 
 sctype_source <- function(){
     # load tissue auto detect
@@ -44,7 +45,7 @@ run_sctype <- function(seurat_object, known_tissue_type = NULL, custom_marker_fi
     }))
     sctype_scores = cL_resutls %>% group_by(cluster) %>% top_n(n = 1, wt = scores)  
     # set low-confident (low ScType score) clusters to "unknown"
-    sctype_scores$type[as.numeric(as.character(sctype_scores$scores)) < sctype_scores$ncells/4] = "Unknown"
+    sctype_scores$type[as.numeric(as.character(sctype_scores$scores)) < sctype_scores$ncells/40] = "Unknown"
     seurat_object_res=seurat_object
     seurat_object_res@meta.data[name] = ""
     for(j in unique(sctype_scores$cluster)){
@@ -61,8 +62,9 @@ run_sctype <- function(seurat_object, known_tissue_type = NULL, custom_marker_fi
 }        
 
 
-get_pos_neg=function(ref_markers,cl){
+get_pos_neg=function(ref_markers, cl, min_pct_diff){
     cluster_markers=ref_markers %>% filter(cluster %in% cl)
+    cluster_markers <- cluster_markers[abs(cluster_markers$pct.1 - cluster_markers$pct.2) > min_pct_diff,]
     data_EV=EnhancedVolcano(cluster_markers,rownames(cluster_markers),x ="avg_log2FC",y ="p_val_adj")
     pos_logFC=data_EV$data %>% filter(Sig=="FC_P" & avg_log2FC >0)
     neg_logFC=data_EV$data %>% filter(Sig=="FC_P" & avg_log2FC <0)
@@ -84,7 +86,7 @@ get_pos_neg=function(ref_markers,cl){
 #' @return 
 #' @export
 #' @examples
-retrieve_markers=function(data, ref_markers, tissue, marker_per_cluster = NULL){
+retrieve_markers=function(ref_markers, tissue, marker_per_cluster = NULL, min_pct_diff = 0.3){
     
     ScTypeDB = data.frame(tissueType = rep(tissue, length(unique(ref_markers$cluster))),
                            cellName = unique(ref_markers$cluster),
@@ -93,7 +95,7 @@ retrieve_markers=function(data, ref_markers, tissue, marker_per_cluster = NULL){
     
     rownames(ScTypeDB)=ScTypeDB$cellName
     for (cl in as.character(unique(ref_markers$cluster))) {
-        df_=get_pos_neg(ref_markers,cl)
+        df_=get_pos_neg(ref_markers,cl, min_pct_diff = min_pct_diff)
         df_pos=df_[[1]][order(df_[[1]]$p_val_adj,(df_[[1]]$avg_log2FC) * -1),] 
         df_neg=df_[[2]][order(df_[[2]]$p_val_adj,(df_[[2]]$avg_log2FC)),] 
         if (is.null(marker_per_cluster)) {
@@ -112,6 +114,7 @@ retrieve_markers=function(data, ref_markers, tissue, marker_per_cluster = NULL){
     dir.create(paste0(pwd_,"/temp"))
     excel_filename <- paste0(pwd_,"/temp/","sctypeDB_", marker_per_cluster, ".xlsx")
     write.xlsx(ScTypeDB, file = excel_filename)
+    return(ScTypeDB)
 }
 
 run_plot_sctype=function(db_=NULL,tissue,data,figure_width=1000,figure_height=550,
@@ -125,22 +128,19 @@ run_plot_sctype=function(db_=NULL,tissue,data,figure_width=1000,figure_height=55
       p2 <- SpatialDimPlot(data_annotated, group.by = 'customclassif', pt.size.factor = pt.size.factor, alpha = c(1, 1), label = FALSE)
     }
     else {
+      figure_width <- 1800
+      figure_height <- 900
       p1 <- DimPlot(data_annotated, reduction = "umap", label = FALSE, repel = TRUE, group.by = 'customclassif', raster = FALSE) 
       p2 <- ImageDimPlot(data_annotated, group.by = 'customclassif')
     }
     #save plots
     dir.create(output_folder, recursive = TRUE)
-    png(file = paste0("./", output_folder, "/", output_name, "_sptype_",
-                      marker_per_cluster, ".png"),width=figure_width, height=figure_height)
+    png(file = paste0("./", output_folder, "/", output_name, "_", marker_per_cluster, ".png"),
+        width=figure_width, height=figure_height)
     print(p1 + p2)
     dev.off()
     if (saveRDS) {
-      if (!is.null(marker_per_cluster)) {
-        rds_filename <- paste0(output_name, "_", marker_per_cluster, ".RDS")
-      }
-      else {
-        rds_filename <- paste0(output_name, ".RDS")
-      }
+      rds_filename <- paste0(output_name, "_", marker_per_cluster, ".RDS")
       saveRDS(data_annotated,file = rds_filename)
     }
     return(data_annotated)
@@ -150,7 +150,7 @@ run_plot_sctype=function(db_=NULL,tissue,data,figure_width=1000,figure_height=55
 #load("brca_her2_ref_markers_minor_normalized.rds") #or major
 #load("brca.rds")
 
-#retrieve_markers(data, ref_markers, tissue="Breast")
+#retrieve_markers(ref_markers, tissue="Breast")
 
 #load("/Users/naderkri/Downloads/brca_1.rds")
 #SpatialDimPlot(data, group.by = 'patho_annot', pt.size.factor = 2.4, alpha = c(1, 1), label = FALSE)

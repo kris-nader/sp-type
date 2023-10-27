@@ -17,14 +17,12 @@ ref@meta.data$celltype_subset <- metadata$celltype_subset
 ref@meta.data$celltype_minor <- metadata$celltype_minor
 ref@meta.data$celltype_major <- metadata$celltype_major
 
-#set minor (or major) cell types as main identifier
-ref <- SetIdent(ref, value = ref@meta.data$celltype_minor)
-
-#added this part recently (10.11.23), data from before was made with non-normalized reference
-ref <- subset(ref, subtype == "HER2+") # cannot normalize all of the data because weak computer :(
 ref <- SCTransform(ref)
 ref <- RunPCA(ref)
 ref <- RunUMAP(ref, dims = 1:30)
+
+#set minor (or major) cell types as main identifier
+ref <- SetIdent(ref, value = ref@meta.data$celltype_minor)
 
 #find markers for cell types
 ref_markers <- FindAllMarkers(ref)
@@ -42,25 +40,34 @@ data@meta.data$patho_annot <- patho$Pathologist.Annotation
 save(data, file = "brca.rds")
 
 source("sptype_KMN.R")
-load("brca_xenvis_xenium.rds")
-load("brca_her2_ref_markers_minor_normalized.rds")
+load("rds/brca_xenvis_xenium.rds")
+load("rds/brca_ref2_markers.rds")
 
-marker_per_cluster <- 100
+marker_per_cluster <- NULL
 tissue <- "Breast"
-retrieve_markers(data,
-                 ref_markers,
+markers <- retrieve_markers(ref_markers,
                  tissue = tissue,
-                 marker_per_cluster = marker_per_cluster)
-run_plot_sctype(data = data,
+                 marker_per_cluster = marker_per_cluster,
+                 min_pct_diff = 0.40)
+data <- run_plot_sctype(data = data,
                 db_ = paste0("temp/sctypeDB_", marker_per_cluster, ".xlsx"),
                 tissue = tissue,
                 marker_per_cluster = marker_per_cluster,
                 output_folder = "figures/brca_xenvis/xenium",
-                output_name = "brca_xenvis_her2ref_minor",
+                output_name = "sptype_40",
                 pt.size.factor = 2.4,
                 saveRDS = FALSE,
-                st_method = "xenium")
+                st_method = "xenium",
+                )
+save(data, file = "rds/brca_xenvis_xenium.rds")
+#check if retrieved markers have similar pct.1 and pct.2
+a <- ref_markers[abs(ref_markers$pct.1 - ref_markers$pct.2) < 0.1,]
+m <- c(markers$geneSymbolmore1 %>% strsplit(",") %>% unlist(),
+       markers$geneSymbolmore2 %>% strsplit(",") %>% unlist()) %>% unique()
+genes_to_check <- a[a$gene %in% m,]
+bad_genes <- genes_to_check$gene %>% unique
 
-
-
+#0.2 564/696
+#0.1 358/696
+#0.05 223/696
 

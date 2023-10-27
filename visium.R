@@ -6,12 +6,12 @@ library(dplyr)
 library(HDF5Array)
 
 #load data
-data_dir <- "data/healthy/liver_crost_VISDP000066/350frompaper"
+data_dir <- "data/lung"
 filename <- "filtered_feature_bc_matrix.h5"
 data <- Load10X_Spatial(data.dir = data_dir, filename = filename)
 
 #load data with no h5 file (brca wu dataset)
-data_dir <- "data/human_intestine/A1"
+data_dir <- "data/human_intestine/A2"
 mat_dir <- paste0(data_dir, "/raw_feature_bc_matrix")
 im_dir <- paste0(data_dir, "/spatial")
 mat <- Read10X(mat_dir, gene.column = 2)
@@ -20,6 +20,7 @@ im <- Read10X_Image(im_dir)
 im <- im[Cells(x = data)]
 DefaultAssay(object = im) <- 'Spatial'
 data[['Slice1']] <- im
+#add metadata
 metadata <- read.csv(paste0(data_dir, "/metadata.csv"))
 data@meta.data$subtype <- metadata$subtype
 data@meta.data$patho_annot <- metadata$Classification
@@ -34,7 +35,7 @@ plot1 <- VlnPlot(data, features = c("nCount_Spatial", "nFeature_Spatial", "perce
 plot2 <- SpatialFeaturePlot(data, features = c("nCount_Spatial", "nFeature_Spatial", "percent.mt"),
                             pt.size.factor = 2.4, alpha = c(0.3, 1))
 #save quality control plots
-output_folder <- "figures/human_intestine"
+output_folder <- "figures/human_kidney"
 dir.create(output_folder, recursive = TRUE)
 output_name <- "violin"
 png(file = paste0("./", output_folder, "/", output_name, ".png"),
@@ -49,8 +50,10 @@ dev.off()
 plot2
 plot1
 #filter
-data <- data[, data$nFeature_Spatial > 300 & data$percent.mt < 25]
-
+data <- data[, data$nFeature_Spatial > 100 & data$percent.mt < 20]
+#spatial plot after filtering
+SpatialFeaturePlot(data, features = c("nCount_Spatial", "nFeature_Spatial", "percent.mt"),
+                   pt.size.factor = 2.4, alpha = c(0.3, 1))
 #normalization
 data <- SCTransform(data, assay="Spatial")
 #without using SCT:
@@ -63,18 +66,20 @@ data <- FindClusters(data, resolution = 0.8) #0.8 is the default resolution
 data <- RunUMAP(data, reduction = "pca", dim = 1:30)
 
 #save data as rds
-save(data, file = "lymph_node_10x.rds")
+save(data, file = "mouse_brain_posterior_10x.rds")
 
 #sptype
 source("sptype_KMN.R")
+output_folder <- "figures/brca_xenvis/visium"
 data <- run_plot_sctype(data = data,
                         #db_ = "temp/sctypeDB_20.xlsx",
-                        tissue = "Intestine",
-                        output_folder = "figures/human_intestine",
-                        output_name = "sptype",
+                        tissue = "Breast",
+                        output_folder = output_folder,
+                        output_name = "sptype1",
                         saveRDS = FALSE,
-                        pt.size.factor = 2)
-save(data, file = "human_intestine.rds")
+                        pt.size.factor = 2,
+                        figure_width = 1400)
+save(data, file = "rds/brca_xenvis_visium.rds")
 #plot clusters separately
 SpatialDimPlot(data,
                cells.highlight = CellsByIdentities(object = data,
