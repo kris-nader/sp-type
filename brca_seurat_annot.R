@@ -1,6 +1,13 @@
 library(Seurat)
 
-load("rds/brca_xenvis_xenium.rds")
+load("rds/brca_xenvis_visium.rds")
+
+data <- SCTransform(data, assay="Spatial")
+data <- RunPCA(data, assay = "SCT", verbose = TRUE)
+data <- FindNeighbors(data, reduction = "pca", dims = 1:30)
+data <- FindClusters(data, resolution = 0.8) #0.8 is the default resolution
+data <- RunUMAP(data, reduction = "pca", dim = 1:30)
+
 load("rds/brca_ref2.rds")
 
 ref <- SCTransform(ref, ncells = 3000, conserve.memory = TRUE)
@@ -9,9 +16,11 @@ ref <- RunUMAP(ref, dims = 1:30)
 
 save(ref, file = "rds/brca_ref2_normalized.rds")
 load("rds/brca_ref2_normalized.rds")
-anchors <- FindTransferAnchors(reference = ref, query = data, normalization.method = "SCT")
+seurat_time_3 <- system.time({
+anchors <- FindTransferAnchors(reference = ref, query = data, normalization.method = "SCT", query.assay = "SCT", reference.assay = "SCT")
 predictions.assay <- TransferData(anchorset = anchors, refdata = ref$celltype, prediction.assay = TRUE,
                                   weight.reduction = data[["pca"]], dims = 1:30)
+})
 data[["predictions"]] <- predictions.assay
 DefaultAssay(data) <- "predictions"
 data <- FindSpatiallyVariableFeatures(data, assay = "predictions", selection.method = "moransi",

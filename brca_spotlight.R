@@ -5,10 +5,11 @@ library(scran)
 library(SingleCellExperiment)
 library(Seurat)
 
-load("rds/brca_xenvis_xenium.rds")
+
+load("rds/brca_xenvis_visium.rds")
 load("rds/brca_ref2.rds")
 #ref <- subset(ref, subtype == "HER2+")
-
+spotlight_time_3 <- system.time({
 sce <- as.SingleCellExperiment(ref)
 sce <- logNormCounts(sce)
 
@@ -30,7 +31,7 @@ mgs <- scoreMarkers(sce, subset.row = genes)
 mgs_fil <- lapply(names(mgs), function(i) {
   x <- mgs[[i]]
   # Filter and keep relevant marker genes, those with AUC > 0.8
-  x <- x[x$mean.AUC > 0.8, ]
+  x <- x[x$mean.AUC > 0.78, ]
   # Sort the genes from highest to lowest weight
   x <- x[order(x$mean.AUC, decreasing = TRUE), ]
   # Add gene and cluster id to the dataframe
@@ -61,11 +62,11 @@ res <- SPOTlight(
   weight_id = "mean.AUC",
   group_id = "cluster",
   gene_id = "gene",
-  assay_sp = "Xenium") #or Spatial
+  assay_sp = "Spatial") #or Xenium
+})
+save(res, file = "rds/brca_xenvis_visium_spotlight.rds")
 
-save(res, file = "rds/brca_xenvis_xenium_spotlight.rds")
-
-load("rds/brca_xenvis_xenium_spotlight.rds")
+load("rds/brca_xenvis_visium_spotlight.rds")
 
 #add annotations to data metadata
 weight_matrix <- res$mat
@@ -76,7 +77,7 @@ barcodes <- data.frame(X = data@assays$Spatial@counts@Dimnames[[2]])
 annots <- merge(spotlight_annots, barcodes, all.y = TRUE, by = "X")
 data@meta.data$spotlight_annots <- annots$annots
 #change the directory below, don't overwrite wrong data!!!
-save(data, file = "rds/brca_xenvis_xenium.rds")
+save(data, file = "rds/brca_xenvis_visium.rds")
 
 head(mat <- res$mat)[, seq_len(3)]
 

@@ -11,32 +11,34 @@ ref <- Read10X("brca_ref", gene.column = 1)
 metadata <- read.csv("brca_ref/metadata.csv")
 cell_types <- metadata$celltype_minor
 names(cell_types) <- metadata$X
+
 #for brca xenvis
+load("rds/brca_xenvis_visium.rds")
 ref <- Read10X("data/cancer/brca_xenvis/sc/ftp", gene.column = 2)
 metadata <- read.xlsx("data/cancer/brca_xenvis/Cell_Barcode_Type_Matrices.xlsx")
 cell_types <- metadata$Annotation
 names(cell_types) <- metadata$Barcode
 cell_types <- as.factor(cell_types)
-
+rctd_time_3 <- system.time({
 #create the Reference object
 ref <- Reference(ref, cell_types)
 
 #load spatial data (raw)
-data_dir <- "data/cancer/brca_xenvis/visium"
-filename <- "filtered_feature_bc_matrix.h5"
-data <- Load10X_Spatial(data.dir = data_dir, filename = filename)
+#data_dir <- "data/cancer/brca_xenvis/visium"
+#filename <- "filtered_feature_bc_matrix.h5"
+#data <- Load10X_Spatial(data.dir = data_dir, filename = filename)
 #load processed data
-load("rds/brca_xenvis_xenium.rds")
+
 coords <- GetTissueCoordinates(data)
 coords$cell <- NULL
-counts <- data@assays$Xenium@counts #xenium or spatial
+counts <- data@assays$Spatial@counts #xenium or spatial
 
 #create SpatialRNA object
 puck <- SpatialRNA(coords, counts)
 
 rctd <- create.RCTD(puck, ref)
 rctd <- run.RCTD(rctd, doublet_mode = 'full')
-
+})
 save(rctd, file = "rds/brca_xenvis_xenium_rctd.rds")
 
 load("rds/brca_xenvis_visium_rctd.rds")

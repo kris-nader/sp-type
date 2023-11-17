@@ -121,7 +121,10 @@ run_plot_sctype=function(db_=NULL,tissue,data,figure_width=1000,figure_height=55
                          output_name = paste0(tissue, "_sptype_output"),
                          output_folder = "figures", marker_per_cluster = NULL, saveRDS = TRUE,
                          pt.size.factor = 2.4, st_method = "visium"){
-    data_annotated=run_sctype(data,known_tissue_type=tissue,custom_marker_file=db_,name="customclassif",slot="SCT")
+  sctype_time_3 <- system.time({  
+  data_annotated=run_sctype(data,known_tissue_type=tissue,custom_marker_file=db_,name="customclassif",slot="SCT")
+  })
+  
     Idents(data_annotated) <- data_annotated@meta.data$customclassif
     if (st_method == "visium") {
       p1 <- DimPlot(data_annotated, reduction = "umap", label = FALSE, repel = TRUE, group.by = 'customclassif') 

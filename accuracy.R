@@ -67,6 +67,12 @@ plot_cm(rctd_cm[[1]])
 plot_cm(seurat_cm[[1]])
 plot_cm(spotlight_cm[[1]])
 
+accuracies = data.frame(method = c("sctype", "seurat", "rctd", "spotlight"),
+                        accuracy = c(sctype_cm[[2]], seurat_cm[[2]],
+                                     rctd_cm[[2]], spotlight_cm[[2]]))
+ggplot(accuracies, aes(x=factor(method, levels = c("sctype", "rctd", "spotlight", "seurat")), y=accuracy)) + 
+  geom_bar(stat = "identity", fill = "skyblue", width = 0.5) +
+  xlab("method")
 
 #brca xenvis xenium
 load("rds/brca_xenvis_xenium.rds")
@@ -100,3 +106,8 @@ plot_cm(sctype_cm[[1]])
 plot_cm(rctd_cm[[1]])
 plot_cm(seurat_cm[[1]])
 plot_cm(spotlight_cm[[1]])
+
+ggplot(times, aes(x=method, y=mean)) + 
+  geom_bar(stat = "identity", fill = "skyblue", width = 0.5) +
+  geom_errorbar( aes(x=method, ymin=mean-sd, ymax=mean+sd), width=0.4, colour="orange", alpha=0.9, size=1.3)
+
