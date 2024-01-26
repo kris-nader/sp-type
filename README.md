@@ -36,7 +36,7 @@ sample.obj <- run_sctype(sample.obj,known_tissue_type="Brain",slot="SCT")
 ### Load and cluster the data
 
 
-First let's load a 10x genomics dataset of sagital mouse brain slices generated using the Visium v1 chemistry. This can be done throught the Seurat package. We will aslo go ahead and load all other recquired packages. 
+First let's load a 10x genomics dataset of sagital mouse brain slices generated using the Visium v1 chemistry. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
 
 ```R
 # Load required packages
