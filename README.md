@@ -8,12 +8,12 @@
   
 Please refer to the original <a href="https://www.nature.com/articles/s41467-022-28803-w" target="_blank">ScType paper</a>  and <a href="https://github.com/IanevskiAleksandr/sc-type" target="_blank">Github</a> for more information on the method.
 
-##
-<br><br>
+
+<br>
 
 ![alt text](https://github.com/IanevskiAleksandr/sc-type/blob/master/ScTypePlan.png)
 
-<br><br>
+<br>
 
 ## Quick start
 
