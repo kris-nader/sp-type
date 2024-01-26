@@ -23,7 +23,8 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
 source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
 
-# Run wrapper function: consists of all steps in the original sctype ( prepare gene set, calculate sctype score, add cell type annotation seurat object meta.data)
+# Run wrapper function consists of all steps in the original sctype
+# prepare gene set, calculate sctype score, add cell type annotation seurat object meta.data
 sample.obj=run_sctype(sample.obj,known_tissue_type="Brain",slot="SCT")
 
 ```
