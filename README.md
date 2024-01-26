@@ -40,7 +40,8 @@ First let's load a 10x genomics dataset of sagital mouse brain slices generated 
 
 ```R
 # Load required packages
-lapply(c("dplyr","Seurat","HGNChelper"), library, character.only = T)
+lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
 
 # Load demo data of sagital mouse brain anterior slice  
 InstallData("stxBrain")
