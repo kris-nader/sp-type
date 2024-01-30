@@ -73,16 +73,14 @@ b1 <- SpatialDimPlot(brain, group.by="sctype_classification")
 b2 <- DimPlot(brain, group.by="sctype_classification")
 b1 + b2
 ```
-<br>
+
 
 ## Notes on Reproducibility
-
 ```R
 sessionInfo();
 [1] dplyr_1.1.4        openxlsx_4.2.5.2   HGNChelper_0.8.1   Seurat_5.0.1      
 [5] SeuratObject_5.0.1 sp_2.1-1             
 ```
-<br>
 
 ## Contact information
 For any questions, please contact **Kristen Michelle Nader** (kristen.nader@helsinki.fi)
