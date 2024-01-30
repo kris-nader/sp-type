@@ -80,7 +80,8 @@ b1 + b2
 
 ```R
 sessionInfo();
-[1] HGNChelper_0.8.1        SeuratObject_4.0.2      Seurat_4.0.3     dplyr_1.0.6            
+[1] dplyr_1.1.4        openxlsx_4.2.5.2   HGNChelper_0.8.1   Seurat_5.0.1      
+[5] SeuratObject_5.0.1 sp_2.1-1             
 ```
 
 <br>
