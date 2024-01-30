@@ -63,7 +63,7 @@ To annotate the sample, simply apply the wrapper function to your seurat object.
 
 If your tissue of interest does not exist, feel free to use a custom marker dataset,_custom_marker_file_, which should be in the same format as the scTypeDB. Once again, we refer the reader to the original <a href="https://github.com/IanevskiAleksandr/sc-type" target="_blank">Github</a> for more information. 
 
-<code>run_sctype</code> will output the prediction to _sctype_classification_.
+<code>run_sctype</code> will output the prediction to the seurat object meta.data in _sctype_classification_.
 
 ```R
 # SCT as slot/assay due to the sample being processed using the SCTransform method
