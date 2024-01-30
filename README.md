@@ -77,6 +77,7 @@ b1 + b2
 
 
 
+## Notes on Reproducibility
 
 ```R
 sessionInfo();
