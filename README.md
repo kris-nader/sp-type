@@ -20,7 +20,13 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 ```R
 
 # load libraries and functions
+# sctype recquired packages
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+# load the data
+library(SeuratData)
+InstallData("ssHippo")
+slide.seq <- LoadData("ssHippo")
+
 source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
 
 # Run wrapper function consists of all steps in the original sctype
@@ -36,26 +42,29 @@ sample.obj <- run_sctype(sample.obj,known_tissue_type="Brain",slot="SCT")
 ### Load and cluster the data
 
 
-First let's load a 10x genomics dataset of sagital mouse brain slices generated using the Visium v1 chemistry. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
+First let's load a slide-seq dataset of Mouse Hippocampus. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
 
 ```R
-# Load required packages
+# Load sctype required packages
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
-source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
+# Load SeuratData to install ssHippo dataset
+library(SeuratData)
+# load source functions
+source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R");
 
-# Load demo data of sagital mouse brain anterior slice  
-InstallData("stxBrain")
-brain <- LoadData("stxBrain", type = "anterior1")
+# Load demo data of mouse hippocampus
+InstallData("ssHippo")
+slide.seq <- LoadData("ssHippo")
 ```
 
-We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#x-visium" target="_blank">here</a>. Please note there are different protocals for analyzing spatial transcriptomics data from different platforms.
+We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#slide-seq" target="_blank">here</a>. 
 
 ```R
-brain <- SCTransform(brain, assay = "Spatial", verbose = FALSE)
-brain <- RunPCA(brain, assay = "SCT", verbose = FALSE)
-brain <- FindNeighbors(brain, reduction = "pca", dims = 1:30)
-brain <- FindClusters(brain, verbose = FALSE)
-brain <- RunUMAP(brain, reduction = "pca", dims = 1:30)
+slide.seq <- SCTransform(slide.seq, assay = "Spatial", ncells = 3000, verbose = FALSE)
+slide.seq <- RunPCA(slide.seq)
+slide.seq <- RunUMAP(slide.seq, dims = 1:30)
+slide.seq <- FindNeighbors(slide.seq, dims = 1:30)
+slide.seq <- FindClusters(slide.seq, resolution = 0.3, verbose = FALSE)
 ```
 
 ### Cell Type annotation
@@ -66,11 +75,10 @@ If your tissue of interest does not exist, feel free to use a custom marker data
 <code>run_sctype</code> will output the prediction to the seurat object meta.data in _sctype_classification_.
 
 ```R
-# SCT as slot/assay due to the sample being processed using the SCTransform method
-brain <- run_sctype(brain,known_tissue_type="Brain",slot="SCT")
+slide.seq <- run_sctype(slide.seq,known_tissue_type="Hippo",slot="SCT",custom_marker_fil_="https://raw.githubusercontent.com/kris-nader/sp-type/master/scTypeDB_Hippo.xlsx")
 # Overlay annotation on DimPlots
-b1 <- SpatialDimPlot(brain, group.by="sctype_classification")
-b2 <- DimPlot(brain, group.by="sctype_classification")
+b1 <- SpatialDimPlot(slide.seq, group.by="sctype_classification")
+b2 <- DimPlot(slide.seq, group.by="sctype_classification")
 b1 + b2
 ```
 
