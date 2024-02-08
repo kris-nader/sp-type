@@ -31,7 +31,7 @@ source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"
 
 # Run wrapper function consists of all steps in the original sctype
 # prepare gene set, calculate sctype score, add cell type annotation seurat object meta.data
-sample.obj <- run_sctype(sample.obj,known_tissue_type="Brain",slot="SCT")
+sample.obj <- run_sctype(sample.obj,known_tissue_type="Hippo",slot="SCT",custom_marker_file=db_hippo)
 
 ```
 
