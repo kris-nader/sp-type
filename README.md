@@ -28,10 +28,11 @@ InstallData("ssHippo")
 slide.seq <- LoadData("ssHippo")
 
 source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
+db_brain="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx"
 
 # Run wrapper function consists of all steps in the original sctype
 # prepare gene set, calculate sctype score, add cell type annotation seurat object meta.data
-sample.obj <- run_sctype(sample.obj,known_tissue_type="Hippo",slot="SCT",custom_marker_file=db_hippo)
+sample.obj <- run_sctype(sample.obj,known_tissue_type="Hippo",slot="SCT",custom_marker_file=db_brain)
 
 ```
 
@@ -49,8 +50,10 @@ First let's load a slide-seq dataset of Mouse Hippocampus. This can be done with
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
 # Load SeuratData to install ssHippo dataset
 library(SeuratData)
+
 # load source functions
 source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R");
+db_hippo="https://github.com/kris-nader/sp-type/raw/main/ref_markers_hippo.xlsx"
 
 # Load demo data of mouse hippocampus
 InstallData("ssHippo")
@@ -75,7 +78,8 @@ If your tissue of interest does not exist, feel free to use a custom marker data
 <code>run_sctype</code> will output the prediction to the seurat object meta.data in _sctype_classification_.
 
 ```R
-slide.seq <- run_sctype(slide.seq,known_tissue_type="Hippo",slot="SCT",custom_marker_fil_="https://raw.githubusercontent.com/kris-nader/sp-type/master/scTypeDB_Hippo.xlsx")
+slide.seq <- run_sctype(slide.seq,known_tissue_type="Hippo",slot="SCT",custom_marker_fil_="https://raw.githubusercontent.com/kris-nader/sp-type/master/ref_markers_hippo.xlsx")
+
 # Overlay annotation on DimPlots
 b1 <- SpatialDimPlot(slide.seq, group.by="sctype_classification")
 b2 <- DimPlot(slide.seq, group.by="sctype_classification")
