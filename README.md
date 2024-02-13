@@ -20,7 +20,7 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 ## Quick start
 
 ```R
-
+## Please note spatial analysis using seurat requires v5
 # load libraries and functions
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
 source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
@@ -49,7 +49,9 @@ First let's load a publically available sagital mouse brain slices generated usi
 ```R
 # Load sctype required packages
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+
 # Load SeuratData to install mouse brain dataset
+# devtools::install_github('satijalab/seurat-data')
 library(SeuratData)
 
 # load source functions
@@ -80,7 +82,8 @@ If your tissue of interest does not exist, feel free to use a custom marker data
 ```R
 brain <- run_sctype(brain,known_tissue_type="Brain",slot="SCT")
 ```
-Visualize the cell-spot annotation
+
+Visualize the annotation
 ```R
 # Overlay annotation on DimPlots
 SpatialDimPlot(brain, group.by="sctype_classification")
@@ -89,8 +92,6 @@ SpatialDimPlot(brain, group.by="sctype_classification")
 <p align="center"> 
 <img src="https://github.com/kris-nader/sp-type/blob/main/anterior_brain_mouse10x_sctype.png">
 </p>
-
-
 
 
 ## Notes on Reproducibility
@@ -106,4 +107,4 @@ For any questions, please contact **Kristen Michelle Nader** (kristen.nader@hels
 
 ## Copyright and license
 
-Code copyright 2024 ScType goes spatial (sp-type) , https://github.com/kris-nader/sp-type/blob/master/LICENSE
+Code copyright 2024 ScType goes Spatial (sp-type) , https://github.com/kris-nader/sp-type/blob/master/LICENSE
