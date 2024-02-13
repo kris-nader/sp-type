@@ -56,7 +56,9 @@ If your tissue of interest does not exist, feel free to use a custom marker data
 
 ```R
 brain <- run_sctype(brain,known_tissue_type="Brain",slot="SCT")
-
+```
+Visualize the cell-spot annotation
+```R
 # Overlay annotation on DimPlots
 b1 <- SpatialDimPlot(brain, group.by="sctype_classification")
 b2 <- DimPlot(brain, group.by="sctype_classification")
