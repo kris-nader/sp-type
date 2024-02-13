@@ -68,7 +68,7 @@ InstallData("stxBrain")
 brain <- LoadData("stxBrain", type = "anterior1")
 ```
 
-We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#slide-seq" target="_blank">here</a>.
+We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#slide-seq" target="_blank">here</a>. SCTransform will take some time.
 
 ```R
 brain <- SCTransform(brain, assay = "Spatial", verbose = FALSE)
