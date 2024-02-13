@@ -38,7 +38,7 @@ SpatialDimPlot(cortex, group.by="sctype_classification")
 <img src="https://github.com/kris-nader/sp-type/blob/main/frontal_cortex_mouse_brain.png">
 </p>
 
-## Spatial Transcriptomics Cell type annotation example 
+## Spatial Transcriptomics - Cell type annotation with scType  
 
 ### Load and cluster the data
 
