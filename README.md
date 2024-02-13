@@ -77,7 +77,12 @@ cortex <- subset(cortex, anterior1_imagerow > 275 & anterior1_imagecol > 370, in
 cortex <- subset(cortex, anterior1_imagerow > 250 & anterior1_imagecol > 440, invert = TRUE)
 
 cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",custom_marker_file="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
+SpatialDimPlot(cortex, group.by="sctype_classification")
 ```
+
+<p align="center"> 
+<img src="https://github.com/kris-nader/sp-type/blob/main/frontal_cortex_mouse_brain.png">
+</p>
 
 ## Notes on Reproducibility
 
