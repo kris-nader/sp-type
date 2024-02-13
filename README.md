@@ -26,13 +26,13 @@ First let's load a publically available sagital mouse brain slices generated usi
 ```R
 # Load sctype required packages
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
-# Load SeuratData to install ssHippo dataset
+# Load SeuratData to install mouse brain dataset
 library(SeuratData)
 
 # load source functions
 source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
 
-# Load demo data of mouse hippocampus
+# Load demo data of mouse brain
 InstallData("stxBrain")
 brain <- LoadData("stxBrain", type = "anterior1")
 ```
