@@ -30,7 +30,7 @@ lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
 library(SeuratData)
 
 # load source functions
-source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R");
+source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
 
 # Load demo data of mouse hippocampus
 InstallData("stxBrain")
