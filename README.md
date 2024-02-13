@@ -46,6 +46,10 @@ SpatialDimPlot(cortex, group.by="sctype_classification")
 
 First let's load a publically available sagital mouse brain slices generated using the Visium v1 chemistry. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
 
+
+
+
+
 ```R
 # Load sctype required packages
 lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
@@ -58,6 +62,8 @@ library(SeuratData)
 source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
 
 # Load demo data of mouse brain
+# InstallData("stxBrain") might not work; a quick fix is to use the following:
+options(timeout=600) #to set the timeout limit for download.packages() to 600s
 InstallData("stxBrain")
 brain <- LoadData("stxBrain", type = "anterior1")
 ```
