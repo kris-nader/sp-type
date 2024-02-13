@@ -13,28 +13,6 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 
 ![alt text](https://github.com/IanevskiAleksandr/sc-type/blob/master/ScTypePlan.png)
 
-<br>
-
-## Quick start
-
-```R
-
-# load libraries and functions
-# sctype recquired packages
-lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
-# load the data
-library(SeuratData)
-InstallData("ssHippo")
-slide.seq <- LoadData("ssHippo")
-
-source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R"); 
-db_brain="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx"
-
-# Run wrapper function consists of all steps in the original sctype
-# prepare gene set, calculate sctype score, add cell type annotation seurat object meta.data
-sample.obj <- run_sctype(sample.obj,known_tissue_type="Hippo",slot="SCT",custom_marker_file=db_brain)
-
-```
 
 <br>
 
@@ -43,7 +21,7 @@ sample.obj <- run_sctype(sample.obj,known_tissue_type="Hippo",slot="SCT",custom_
 ### Load and cluster the data
 
 
-First let's load a slide-seq dataset of Mouse Hippocampus. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
+First let's load a publically available sagital mouse brain slices generated using the Visium v1 chemistry. This can be done with the Seurat package. We will also go ahead and load all other recquired packages. 
 
 ```R
 # Load sctype required packages
@@ -53,21 +31,20 @@ library(SeuratData)
 
 # load source functions
 source("https://raw.githubusercontent.com/kris-nader/sp-type/master/R/sp-type.R");
-db_hippo="https://github.com/kris-nader/sp-type/raw/main/ref_markers_hippo.xlsx"
 
 # Load demo data of mouse hippocampus
-InstallData("ssHippo")
-slide.seq <- LoadData("ssHippo")
+InstallData("stxBrain")
+brain <- LoadData("stxBrain", type = "anterior1")
 ```
 
-We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#slide-seq" target="_blank">here</a>. 
+We will follow the recommended Seurat pipeline for processing spatial data which can be found <a href="https://satijalab.org/seurat/articles/spatial_vignette#slide-seq" target="_blank">here</a>.
 
 ```R
-slide.seq <- SCTransform(slide.seq, assay = "Spatial", ncells = 3000, verbose = FALSE)
-slide.seq <- RunPCA(slide.seq)
-slide.seq <- RunUMAP(slide.seq, dims = 1:30)
-slide.seq <- FindNeighbors(slide.seq, dims = 1:30)
-slide.seq <- FindClusters(slide.seq, resolution = 0.3, verbose = FALSE)
+brain <- SCTransform(brain, assay = "Spatial", verbose = FALSE)
+brain <- RunPCA(brain, assay = "SCT", verbose = FALSE)
+brain <- FindNeighbors(brain, reduction = "pca", dims = 1:30)
+brain <- FindClusters(brain, verbose = FALSE)
+brain <- RunUMAP(brain, reduction = "pca", dims = 1:30)
 ```
 
 ### Cell Type annotation
@@ -78,16 +55,27 @@ If your tissue of interest does not exist, feel free to use a custom marker data
 <code>run_sctype</code> will output the prediction to the seurat object meta.data in _sctype_classification_.
 
 ```R
-slide.seq <- run_sctype(slide.seq,known_tissue_type="Hippo",slot="SCT",custom_marker_fil_="https://raw.githubusercontent.com/kris-nader/sp-type/master/ref_markers_hippo.xlsx")
+brain <- run_sctype(brain,known_tissue_type="Brain",slot="SCT")
 
 # Overlay annotation on DimPlots
-b1 <- SpatialDimPlot(slide.seq, group.by="sctype_classification")
-b2 <- DimPlot(slide.seq, group.by="sctype_classification")
+b1 <- SpatialDimPlot(brain, group.by="sctype_classification")
+b2 <- DimPlot(brain, group.by="sctype_classification")
 b1 + b2
 ```
 
+### Cell Annotation using a custom made marker set
+
+```R
+cortex <- subset(brain, idents = c(1, 2, 3, 4, 6, 7))
+cortex <- subset(cortex, anterior1_imagerow > 400 | anterior1_imagecol < 150, invert = TRUE)
+cortex <- subset(cortex, anterior1_imagerow > 275 & anterior1_imagecol > 370, invert = TRUE)
+cortex <- subset(cortex, anterior1_imagerow > 250 & anterior1_imagecol > 440, invert = TRUE)
+
+cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",_custom_marker_file_="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
+```
 
 ## Notes on Reproducibility
+
 ```R
 sessionInfo();
 [1] dplyr_1.1.4        openxlsx_4.2.5.2   HGNChelper_0.8.1   Seurat_5.0.1      
