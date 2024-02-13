@@ -60,9 +60,7 @@ brain <- run_sctype(brain,known_tissue_type="Brain",slot="SCT")
 Visualize the cell-spot annotation
 ```R
 # Overlay annotation on DimPlots
-b1 <- SpatialDimPlot(brain, group.by="sctype_classification")
-b2 <- DimPlot(brain, group.by="sctype_classification")
-b1 + b2
+SpatialDimPlot(brain, group.by="sctype_classification")
 ```
 
 ### Cell Annotation using a custom made marker set
