@@ -63,6 +63,11 @@ Visualize the cell-spot annotation
 SpatialDimPlot(brain, group.by="sctype_classification")
 ```
 
+<p align="center"> 
+<img src="https://github.com/kris-nader/sp-type/blob/main/anterior_brain_mouse10x_sctype.png">
+</p>
+
+
 ### Cell Annotation using a custom made marker set
 
 ```R
@@ -71,7 +76,7 @@ cortex <- subset(cortex, anterior1_imagerow > 400 | anterior1_imagecol < 150, in
 cortex <- subset(cortex, anterior1_imagerow > 275 & anterior1_imagecol > 370, invert = TRUE)
 cortex <- subset(cortex, anterior1_imagerow > 250 & anterior1_imagecol > 440, invert = TRUE)
 
-cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",_custom_marker_file_="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
+cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",custom_marker_file="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
 ```
 
 ## Notes on Reproducibility
