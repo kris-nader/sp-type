@@ -4,7 +4,8 @@
 
 **Article**: TBA
 
-<p style="text-align:justify;"> <b>ScType</b> is a computational method for automated cell type annotation based on only scRNA-seq data. In this study, we adapt and showcase the application of scType, renowned for its speed, transparency, and user-friendly interface, to efficiently annotate cell types in spatial transcriptomics data.
+In this study, we adapt and showcase the application of scType, renowned for its speed, transparency, and user-friendly interface, to efficiently annotate cell types in **spatial transcriptomics data**.
+
   
 Please refer to the original <a href="https://www.nature.com/articles/s41467-022-28803-w" target="_blank">ScType paper</a>  and <a href="https://github.com/IanevskiAleksandr/sc-type" target="_blank">Github</a> for more information on the method.
 
