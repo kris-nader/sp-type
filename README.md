@@ -11,7 +11,7 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 
 <br>
 
-![alt text](https://github.com/IanevskiAleksandr/sc-type/blob/master/ScTypePlan.png)
+![alt text](https://github.com/kris-nader/sp-type/blob/main/sctype_goes_spatial.png)
 
 
 <br>
