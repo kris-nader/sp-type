@@ -16,6 +16,28 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 
 <br>
 
+## Quick start
+
+```R
+
+# load libraries and functions
+lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
+
+# load data
+cortex <- readRDS(gzcon(url('https://raw.githubusercontent.com/kris-nader/sp-type/master/frontal_cortex_subset.RDS')))
+
+# assign cell types
+cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",custom_marker_file="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
+
+# View results
+SpatialDimPlot(cortex, group.by="sctype_classification")
+
+```
+<p align="center"> 
+<img src="https://github.com/kris-nader/sp-type/blob/main/frontal_cortex_mouse_brain.png">
+</p>
+
 ## Spatial Transcriptomics Cell type annotation example 
 
 ### Load and cluster the data
@@ -68,21 +90,7 @@ SpatialDimPlot(brain, group.by="sctype_classification")
 </p>
 
 
-### Cell Annotation using a custom made marker set
 
-```R
-cortex <- subset(brain, idents = c(1, 2, 3, 4, 6, 7))
-cortex <- subset(cortex, anterior1_imagerow > 400 | anterior1_imagecol < 150, invert = TRUE)
-cortex <- subset(cortex, anterior1_imagerow > 275 & anterior1_imagecol > 370, invert = TRUE)
-cortex <- subset(cortex, anterior1_imagerow > 250 & anterior1_imagecol > 440, invert = TRUE)
-
-cortex <- run_sctype(cortex,known_tissue_type="Brain",slot="SCT",custom_marker_file="https://github.com/kris-nader/sp-type/raw/main/ref_markers_brain_allen_cortex.xlsx" )
-SpatialDimPlot(cortex, group.by="sctype_classification")
-```
-
-<p align="center"> 
-<img src="https://github.com/kris-nader/sp-type/blob/main/frontal_cortex_mouse_brain.png">
-</p>
 
 ## Notes on Reproducibility
 
