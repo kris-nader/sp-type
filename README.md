@@ -22,7 +22,7 @@ Please refer to the original <a href="https://www.nature.com/articles/s41467-022
 ```R
 ## Please note spatial analysis using seurat requires v5
 # load libraries and functions
-lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+invisible(lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T))
 source("https://raw.githubusercontent.com/kris-nader/sp-type/main/sp-type.R");
 
 # load data
