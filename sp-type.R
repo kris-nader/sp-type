@@ -97,3 +97,42 @@ run_sctype <- function(seurat_object, known_tissue_type = NULL, custom_marker_fi
     print(text_)
     return(seurat_object_res)
 }   
+
+
+get_pos_neg=function(ref_markers, cl, min_pct_diff){
+    cluster_markers=ref_markers %>% filter(cluster %in% cl)
+    cluster_markers <- cluster_markers[abs(cluster_markers$pct.1 - cluster_markers$pct.2) > min_pct_diff,]
+    data_EV=EnhancedVolcano(cluster_markers,rownames(cluster_markers),x ="avg_log2FC",y ="p_val_adj")
+    pos_logFC=data_EV$data %>% filter(Sig=="FC_P" & avg_log2FC >0)
+    neg_logFC=data_EV$data %>% filter(Sig=="FC_P" & avg_log2FC <0)
+    return(list(pos_logFC,neg_logFC))
+}
+
+
+retrieve_markers=function(ref_markers, tissue, marker_per_cluster = NULL, min_pct_diff = 0.3){
+    
+    ScTypeDB = data.frame(tissueType = rep(tissue, length(unique(ref_markers$cluster))),
+                           cellName = unique(ref_markers$cluster),
+                           geneSymbolmore1 = "",
+                           geneSymbolmore2 = "")
+    
+    rownames(ScTypeDB)=ScTypeDB$cellName
+    for (cl in as.character(unique(ref_markers$cluster))) {
+        df_=get_pos_neg(ref_markers,cl, min_pct_diff = min_pct_diff)
+        df_pos=df_[[1]][order(df_[[1]]$p_val_adj,(df_[[1]]$avg_log2FC) * -1),] 
+        df_neg=df_[[2]][order(df_[[2]]$p_val_adj,(df_[[2]]$avg_log2FC)),] 
+        if (is.null(marker_per_cluster)) {
+          positive_markers=paste0(df_pos$gene,collapse = ",")
+          negative_markers=paste0(df_neg$gene,collapse = ",")
+        }
+        else {
+          positive_markers=paste0(df_pos$gene[1:marker_per_cluster],collapse = ",")
+          negative_markers=paste0(df_neg$gene[1:marker_per_cluster],collapse = ",")
+        }
+        ScTypeDB[cl,"geneSymbolmore1"]=positive_markers
+        ScTypeDB[cl,"geneSymbolmore2"]=negative_markers
+        }
+    rownames(ScTypeDB)=NULL
+    
+    return(ScTypeDB)
+}
