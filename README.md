@@ -2,7 +2,7 @@
 # SpType: ScType enables fast and accurate cell type identification from spatial transcriptomics data
 
 
-**Article**: TBA
+**Article**: [https://academic.oup.com/bioinformatics/article/doi/10.1093/bioinformatics/btae426/7700663](https://academic.oup.com/bioinformatics/article/doi/10.1093/bioinformatics/btae426/7700663)
 
 In this study, we adapt and showcase the application of scType, renowned for its speed, transparency, and user-friendly interface, to efficiently annotate cell types in **spatial transcriptomics data**.
 
